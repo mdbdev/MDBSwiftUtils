@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 import Parse
-
+import CoreLocation
 class MDBSwiftParseUtils {
     
     
