@@ -1,5 +1,10 @@
 #MDBSwiftUtils
-Utility classes for faster development. Files are documented in case you have any questions on how to use certain functions.
+Utility classes for faster development. Files are documented in case you have any questions on how to use certain functions. In order to use, just add MDBSwiftUtils.swift and MDBSwiftParseUtils.swift to your XCode project.
+
+######How to Call Functions Example - Swift:
+``` swift
+let timeElapsed = MDBSwiftUtils.timeSince(oldTime)
+```
 
 ###MDBSwiftUtils
 Includes methods to for common tasks that developers may want to accomplish in their projects.
