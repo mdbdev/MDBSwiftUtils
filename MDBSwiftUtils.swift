@@ -186,7 +186,87 @@ class MDBSwiftUtils {
         currVC.presentViewController(alert, animated: true, completion: nil)
     }
     
+    /**
+     Returns a UIImage rendered with a given alpha.
+     
+     - returns:
+     a UIImage with an alpha applied to it
+     
+     - parameters:
+        - alpha: the alpha that you want the new image to have
+        - image: the image you are applying the alpha to
+     
+     */
+    func imageWithAlpha(alpha: CGFloat, image: UIImage) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(image.size, false, 0.0)
+        let context = UIGraphicsGetCurrentContext()!
+        let area: CGRect = CGRectMake(0, 0, image.size.width, image.size.height)
+        CGContextScaleCTM(context, 1, -1)
+        CGContextTranslateCTM(context, 0, -area.size.height)
+        CGContextSetBlendMode(context, CGBlendMode.Multiply)
+        CGContextSetAlpha(context, alpha)
+        CGContextDrawImage(context, area, image.CGImage)
+        let alphaImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return alphaImage
+    }
 
+    /**
+     Adds an image to the end of a label.
+     
+     - parameters:
+        - label: label we want to add the image to
+        - labelText: the text that the label should have
+        - image: the image that we want to add to the label
+     */
+    func addImageToLabel(label: UILabel, labelText: String, image: UIImage) {
+        let attachment = NSTextAttachment()
+        attachment.image = image
+        let attachmentString = NSAttributedString(attachment: attachment)
+        let textString = NSMutableAttributedString(string: labelText)
+        textString.appendAttributedString(attachmentString)
+        label.attributedText = textString
+    }
+    
+    /**
+     Set the image of a UIImageView from a url.
+     
+     - parameters:
+        - urlString: url of the image as a String
+        - imageView: imageView that we want to set the image of
+     */
+    func setImageViewImageFromUrl(urlString: String, imageView: UIImageView) {
+        let url = NSURL(string: urlString)!
+        let data = NSData(contentsOfURL: url)
+        let image = UIImage(data: data!)!
+        imageView.image = image
+    }
+    
+    /**
+     Get JSON object as an NSDictionary from a url using HTTP GET request.
+     
+     - parameters:
+        - urlString: url for the request as a String
+        - completion: block to be called once JSON object is retrieved
+    */
+    
+    func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
+        let url: NSURL = NSURL(string: urlString)!
+        let request = NSURLRequest(URL: url)
+        let opQueue = NSOperationQueue()
+        
+        NSURLConnection.sendAsynchronousRequest(request, queue: opQueue, completionHandler:{ (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
+            do {
+                
+                if let result = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
+                    completion(result)
+                }
+                
+            } catch let error as NSError {
+                print(error.localizedDescription)
+            }
+        })
+    }
     
     
 }
