@@ -249,7 +249,6 @@ class MDBSwiftUtils {
         - urlString: url for the request as a String
         - completion: block to be called once JSON object is retrieved
     */
-    
     func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
         let url: NSURL = NSURL(string: urlString)!
         let request = NSURLRequest(URL: url)
