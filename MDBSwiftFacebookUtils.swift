@@ -10,9 +10,9 @@ import Foundation
 import FBSDKCoreKit
 import FBSDKLoginKit
 
-class MDBSwiftFacebookUtils {
+public class MDBSwiftFacebookUtils {
     
-    var facebookFriends: Array<NSDictionary>!
+    static var facebookFriends: Array<NSDictionary>!
     
     /**
      Gets all of the user's Facebook friends asynchronously. Block is called once all friends are retrieved.
@@ -20,7 +20,7 @@ class MDBSwiftFacebookUtils {
      - parameters:
      - block: block that is executed once all friends are retrieved.
      */
-    func getAllFBFriendsWithBlock(block: (Array<NSDictionary>) -> Void) {
+    static func getAllFBFriendsWithBlock(block: (Array<NSDictionary>) -> Void) {
         
         facebookFriends = Array<NSDictionary>()
         
@@ -36,19 +36,16 @@ class MDBSwiftFacebookUtils {
      - parameters:
         - block: block that is called each time a batch is retrieved.
      */
-    func getAllFBFriendsWithIncrementalBlock(block: (Array<NSDictionary>) -> Void) {
+    static func getAllFBFriendsWithIncrementalBlock(block: (Array<NSDictionary>) -> Void) {
         
         facebookFriends = Array<NSDictionary>()
-        
         getFriendsUsingApp()
-        
         getFriendsNotUsingApp(block, finalCompletion: nil)
-        
-        
     }
     
-    private func getFriendsNotUsingApp(eachCompletion: ((Array<NSDictionary>) -> Void)?, finalCompletion: ((Array<NSDictionary>) -> Void)?) {
-        FBSDKGraphRequest(graphPath: "/me/invitable_friends", parameters: ["fields": "name, email, friends, picture"]).startWithCompletionHandler { (connection: FBSDKGraphRequestConnection!, result: AnyObject!, error: NSError!) -> Void in
+    private static func getFriendsNotUsingApp(eachCompletion: ((Array<NSDictionary>) -> Void)?, finalCompletion: ((Array<NSDictionary>) -> Void)?) {
+        FBSDKGraphRequest(graphPath: "/me/invitable_friends", parameters: ["fields": "name, email, friends, picture"]).startWithCompletionHandler {
+          (connection: FBSDKGraphRequestConnection!, result: AnyObject!, error: NSError!) -> Void in
             
             let data = result.objectForKey("data") as! NSArray
             
@@ -72,9 +69,10 @@ class MDBSwiftFacebookUtils {
         }
     }
     
-    private func getFriendsUsingApp() {
+    private static func getFriendsUsingApp() {
         let fbRequest = FBSDKGraphRequest(graphPath:"/me/friends", parameters: ["fields": "name, email, friends, picture"])
-        fbRequest.startWithCompletionHandler { (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
+        fbRequest.startWithCompletionHandler {
+          (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
             
             if error == nil {
                 
@@ -97,9 +95,10 @@ class MDBSwiftFacebookUtils {
 
     }
     
-    private func recursiveRequestFriends(urlString: String, eachCompletion: ((Array<NSDictionary>) -> Void)?, finalCompletion: ((Array<NSDictionary>) -> Void)?) {
+    private static func recursiveRequestFriends(urlString: String, eachCompletion: ((Array<NSDictionary>) -> Void)?, finalCompletion: ((Array<NSDictionary>) -> Void)?) {
         
-        httpJSONGETRequest(urlString, completion: {(result: NSDictionary) -> Void in
+        httpJSONGETRequest(urlString) {
+          (result: NSDictionary) -> Void in
             
             let data : NSArray = result.objectForKey("data") as! NSArray
             
@@ -125,26 +124,25 @@ class MDBSwiftFacebookUtils {
                 }
             }
             
-        })
+        }
         
     }
 
-    private func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
+    private static func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
         let url: NSURL = NSURL(string: urlString)!
         let request = NSURLRequest(URL: url)
         let opQueue = NSOperationQueue()
         
-        NSURLConnection.sendAsynchronousRequest(request, queue: opQueue, completionHandler:{ (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
-            do {
-                
-                if let result = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
-                    completion(result)
-                }
-                
-            } catch let error as NSError {
-                print(error.localizedDescription)
+        NSURLConnection.sendAsynchronousRequest(request, queue: opQueue) {
+          (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
+          do {
+            if let result = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
+              completion(result)
             }
-        })
+          } catch let error as NSError {
+            print(error.localizedDescription)
+          }
+        }
     }
     
     /**
@@ -154,20 +152,17 @@ class MDBSwiftFacebookUtils {
         - block: block that's called once data has been retrieved
  
     */
-    func getFBDataWithBlock(block: (NSDictionary) -> Void) {
+    static func getFBDataWithBlock(block: (NSDictionary) -> Void) {
         let graphRequest : FBSDKGraphRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "name, email, gender"])
-        graphRequest.startWithCompletionHandler({ (connection, result, error) -> Void in
+        graphRequest.startWithCompletionHandler {
+          (connection, result, error) -> Void in
             
             if error != nil {
-                
-                print("Error: \(error)")
-                
+                NSLog("Error: \(error)")
             } else {
-                
                 block(result as! NSDictionary)
-               
             }
-        })
+        }
     }
     
     /**
@@ -177,46 +172,34 @@ class MDBSwiftFacebookUtils {
         - block: block that's called once picture has been retrieved
      
      */
-    func getFBProfilePicWithBlock(block: (UIImage) -> Void) {
+    static func getFBProfilePicWithBlock(block: (UIImage) -> Void) {
         let pictureRequest = FBSDKGraphRequest(graphPath: "me/picture?type=large&redirect=false", parameters: nil)
-        pictureRequest.startWithCompletionHandler({
+        pictureRequest.startWithCompletionHandler {
             (connection, result, error: NSError!) -> Void in
             if error == nil {
                 
                 if let profilePicture = result.objectForKey("data") as! NSDictionary? {
-                    
                     if let picUrl = profilePicture.objectForKey("url") as! String? {
                         
                         let url = NSURL(string: picUrl)
                         let urlRequest = NSURLRequest(URL: url!)
                         
-                        NSURLConnection.sendAsynchronousRequest(urlRequest, queue: NSOperationQueue.mainQueue(), completionHandler: {
+                        NSURLConnection.sendAsynchronousRequest(urlRequest, queue: NSOperationQueue.mainQueue()) {
                             (response, data, error) in
                             
                             let image = UIImage(data: data!)
-                            
                             block(image!)
-                            
-                        })
-                        
+                        }
                     } else {
-                        print("Picture could not be retrieved")
+                        NSLog("Picture could not be retrieved")
                     }
-                    
+
                 } else {
-                    
-                    print("Picture could not be retrieved")
-                    
+                    NSLog("Picture could not be retrieved")
                 }
-                
             } else {
-                print("Erorr: \(error)")
+                NSLog("Erorr: \(error)")
             }
-            
-        })
-
+        }
     }
-    
-
-    
 }

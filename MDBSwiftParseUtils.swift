@@ -1,17 +1,16 @@
 //
 //  MDBSwiftParseUtils.swift
-//  DealOn
 //
 //  Created by Akkshay Khoslaa on 4/25/16.
-//  Copyright © 2016 Akkshay Khoslaa. All rights reserved.
+//  Copyright © 2016 Mobile Developers of Berkeley. All rights reserved.
 //
 
 import Foundation
 import UIKit
 import Parse
 import CoreLocation
-class MDBSwiftParseUtils {
-    
+
+public class MDBSwiftParseUtils {
     
     /**
      Sets the image of an imageview asynchronously.
@@ -20,7 +19,7 @@ class MDBSwiftParseUtils {
         - file: PFFile containing image
         - imageView: UIImageView that you want to set the image of
      */
-    class func setImageViewImageFromFile(file: PFFile, imageView: UIImageView) {
+    static func setImageViewImageFromFile(file: PFFile, imageView: UIImageView) {
         file.getDataInBackgroundWithBlock {
             (imageData: NSData?, error: NSError?) -> Void in
             if error == nil {
@@ -39,7 +38,7 @@ class MDBSwiftParseUtils {
         - file: PFFile containing image
         - button: UIButton that you want to set the image of
      */
-    class func setButtonImageFromFile(file: PFFile, button: UIButton) {
+    static func setButtonImageFromFile(file: PFFile, button: UIButton) {
         file.getDataInBackgroundWithBlock {
             (imageData: NSData?, error: NSError?) -> Void in
             if error == nil {
@@ -58,7 +57,7 @@ class MDBSwiftParseUtils {
         - pointer: PFObject that needs to be fetched that contains the PFFile
         - imageView: UIImageView that you want to set the image of
      */
-    class func setImageViewImageFromPointer(pointer: PFObject, imageView: UIImageView) {
+    static func setImageViewImageFromPointer(pointer: PFObject, imageView: UIImageView) {
         pointer.fetchIfNeededInBackgroundWithBlock {
             (imageObject: PFObject?, error: NSError?) -> Void in
             let headerImageFile = imageObject!["img"] as! PFFile
@@ -71,9 +70,7 @@ class MDBSwiftParseUtils {
                     }
                 }
             }
-            
         }
-        
     }
     
     /**
@@ -84,7 +81,7 @@ class MDBSwiftParseUtils {
         - imageView: UIImageView that you want to set the image of
         - imageFieldName: Name of the field containing the PFFile
      */
-    class func setImageViewImageFromPointer(pointer: PFObject, imageFieldName: String, imageView: UIImageView) {
+    static func setImageViewImageFromPointer(pointer: PFObject, imageFieldName: String, imageView: UIImageView) {
         pointer.fetchIfNeededInBackgroundWithBlock {
             (imageObject: PFObject?, error: NSError?) -> Void in
             let headerImageFile = imageObject!["img"] as! PFFile
@@ -92,14 +89,12 @@ class MDBSwiftParseUtils {
                 (imageData: NSData?, error: NSError?) -> Void in
                 if error == nil {
                     if let imageData = imageData {
-                        let image = UIImage(data:imageData)
+                        let image = UIImage(data: imageData)
                         imageView.image = image
                     }
                 }
             }
-            
         }
-        
     }
     
     /**
@@ -110,7 +105,7 @@ class MDBSwiftParseUtils {
         - imageView: UIImageView that you want to set the image of
         - imageFieldName: Name of the field containing the PFFile
      */
-    class func setButtonImageFromPointer(pointer: PFObject, imageFieldName: String, button: UIButton) {
+    static func setButtonImageFromPointer(pointer: PFObject, imageFieldName: String, button: UIButton) {
         pointer.fetchIfNeededInBackgroundWithBlock {
             (imageObject: PFObject?, error: NSError?) -> Void in
             let headerImageFile = imageObject!["img"] as! PFFile
@@ -118,14 +113,12 @@ class MDBSwiftParseUtils {
                 (imageData: NSData?, error: NSError?) -> Void in
                 if error == nil {
                     if let imageData = imageData {
-                        let image = UIImage(data:imageData)
+                        let image = UIImage(data: imageData)
                         button.setImage(image, forState: .Normal)
                     }
                 }
             }
-            
         }
-        
     }
     
     /**
@@ -138,31 +131,30 @@ class MDBSwiftParseUtils {
         - firstLocation: first location geopoint
         - secondLocation: second location geopoint
      */
-    class func getDistanceString(firstLocation: PFGeoPoint, secondLocation: PFGeoPoint) -> String {
-        return String(Double(round(10*firstLocation.distanceInMilesTo(secondLocation))/10)) + " mi"
+    static func getDistanceString(firstLocation: PFGeoPoint, secondLocation: PFGeoPoint) -> String {
+        return "\(Double(round(10*firstLocation.distanceInMilesTo(secondLocation))/10)) mi"
     }
     
     /**
-     Check if location services are authorized, and if they are get the current location. Make sure you call MDBSwiftUtils.startLocationServices() first.
+     Check if location services are authorized, and if they are get the current location. 
+     Make sure you call MDBSwiftUtils.startLocationServices() first.
      
      - returns:
-     the current location as PFGeoPoint if location services are authorized; otherwise returns PFGeoPoint(latitude: 0, longitude: 0)
+     the current location as PFGeoPoint if location services are authorized; otherwise returns nil
      
      - parameters:
         - locationManager: CLLocationManager instance being used in your VC
      */
-    func getCurrentLocationGeoPoint(locationManager: CLLocationManager) -> PFGeoPoint {
-        if( CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse ||
-            CLLocationManager.authorizationStatus() == CLAuthorizationStatus.Authorized){
+    static func getCurrentLocationGeoPoint(locationManager: CLLocationManager) -> PFGeoPoint? {
+        if (CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse
+          || CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedAlways) {
                 
-                let currentLocation = locationManager.location
-                return PFGeoPoint(location: currentLocation)
+          let currentLocation = locationManager.location
+          return PFGeoPoint(location: currentLocation)
                 
         } else {
-            return PFGeoPoint(latitude: 0, longitude: 0)
+            return nil
         }
     }
-    
-    
-    
+  
 }
