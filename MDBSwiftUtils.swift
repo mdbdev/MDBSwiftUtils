@@ -1,17 +1,15 @@
 //
 //  MDBSwiftUtils.swift
-//  DealOn
 //
 //  Created by Akkshay Khoslaa on 4/25/16.
-//  Copyright © 2016 Akkshay Khoslaa. All rights reserved.
+//  Copyright © 2016 Mobile Developers of Berkeley. All rights reserved.
 //
-
 
 import Foundation
 import UIKit
 import CoreLocation
-class MDBSwiftUtils {
-    
+
+public class MDBSwiftUtils {
     
     /**
      Returns the time since an NSDate as a properly formatted string.
@@ -22,41 +20,32 @@ class MDBSwiftUtils {
      - parameters:
         - oldTime: we want to find time elapsed since this time
      */
-    class func timeSince(oldTime: NSDate) -> String {
-        var timePassedString = ""
-        let currDate = NSDate()
-        let passedTime:NSTimeInterval = currDate.timeIntervalSinceDate(oldTime)
-        if Double(passedTime) < 60.0 {
-            timePassedString = String(Int(Double(passedTime)))
-            if Int(Double(passedTime)) == 1 {
-                timePassedString += " sec ago"
-            } else {
-                timePassedString += " secs ago"
-            }
-        } else if Double(passedTime) < 3600.0 {
-            timePassedString = String(Int(Double(passedTime)/60))
-            if Int(Double(passedTime)/60) == 1 {
-                timePassedString += " min ago"
-            } else {
-                timePassedString += " mins ago"
-            }
-        } else if Double(passedTime) < 86400.0 {
-            timePassedString = String(Int(Double(passedTime)/3600))
-            if Int(Double(passedTime)/3600) == 1 {
-                timePassedString += " hr ago"
-            } else {
-                timePassedString += " hrs ago"
-            }
-        } else {
-            timePassedString = String(Int(Double(passedTime)/86400.0))
-            if Int(Double(passedTime)/86400.0) == 1 {
-                timePassedString += " day ago"
-            } else {
-                timePassedString += " days ago"
-            }
+    static func timeSince(oldDate: NSDate) -> String {
+      let currDate = NSDate()
+      let dayHourMinuteSecond: NSCalanderUnit = [.Day, .Hour, .Minute, .Second]
+      let difference = NSCalandar.currentCalendar().components(dayHourMinuteSecond, fromDate: oldTime, toDate: currDate, options: [])
+
+      if difference.day > 0 {
+        if difference.day == 1 {
+          return "1 day ago"
         }
-        
-        return timePassedString
+        return "\(difference.day) days ago"
+      } else if difference.hour > 0 {
+        if difference.hour == 1 {
+          return "1 hr ago"
+        }
+        return "\(difference.hour) hrs ago"
+      } else if difference.minute > 0 {
+        if difference.minute == 1 {
+          return "1 min ago"
+        }
+        return "\(difference.minute) mins ago"
+      } else {
+        if difference.second == 1 {
+          return "1 sec ago"
+        }
+        return "\(difference.second) secs ago"
+      }
     }
     
     /**
@@ -69,7 +58,7 @@ class MDBSwiftUtils {
         - firstNum: the returned number must be greater than this
         - secondNum: the returned number must be less than this
      */
-    class func randomNumBetween(firstNum: CGFloat, secondNum: CGFloat) -> CGFloat {
+    static func randomNumBetween(firstNum: CGFloat, secondNum: CGFloat) -> CGFloat {
         return CGFloat(arc4random()) / CGFloat(UINT32_MAX) * abs(firstNum - secondNum) + min(firstNum, secondNum)
     }
     
@@ -83,9 +72,9 @@ class MDBSwiftUtils {
      - parameters:
         - val: value to be converted to currency string
      */
-    class func doubleToCurrencyString(val: Double) -> String {
+    static func doubleToCurrencyString(val: Double) -> String {
         if (val * 100) % 100 == 0 {
-            return "$" + String(Int(val))
+            return "$\(Int(val))"
         } else {
             let currencyFormatter = NSNumberFormatter()
             currencyFormatter.numberStyle = .CurrencyStyle
@@ -99,7 +88,7 @@ class MDBSwiftUtils {
      - parameters:
         - label: the label to be formatted
      */
-    class func formatMultiLineLabel(label: UILabel) {
+    static func formatMultiLineLabel(label: UILabel) {
         label.lineBreakMode = .ByWordWrapping
         label.numberOfLines = 0
     }
@@ -115,7 +104,7 @@ class MDBSwiftUtils {
         - maxWidth: the maxWidth the label can be
         - font: the font used by the label
      */
-    class func getMultiLineLabelHeight(content: String, maxWidth: Int, font: UIFont) -> CGFloat {
+    static func getMultiLineLabelHeight(content: String, maxWidth: Int, font: UIFont) -> CGFloat {
         let contentString = content
         let maximumLabelSize: CGSize = CGSizeMake(CGFloat(maxWidth), 1000)
         let options: NSStringDrawingOptions = [.TruncatesLastVisibleLine, .UsesLineFragmentOrigin]
@@ -123,9 +112,7 @@ class MDBSwiftUtils {
         let labelBounds: CGRect = contentString.boundingRectWithSize(maximumLabelSize, options: options, attributes: attr, context: nil)
         let labelHeight: CGFloat = labelBounds.size.height
         return labelHeight
-        
     }
-  
     
     /**
      Starts location services by requesting authorization if needed.
@@ -134,7 +121,7 @@ class MDBSwiftUtils {
         - locationManager: CLLocationManager instance being used in your VC
         - currVC: the VC you are calling this function in. Make sure it includes CLLocationManagerDelegate
      */
-    func startLocationServices(locationManager: CLLocationManager, currVC: CLLocationManagerDelegate) {
+    static func startLocationServices(locationManager: CLLocationManager, currVC: CLLocationManagerDelegate) {
         locationManager.delegate = currVC
         locationManager.requestAlwaysAuthorization()
         locationManager.requestWhenInUseAuthorization()
@@ -150,20 +137,17 @@ class MDBSwiftUtils {
      Check if location services are authorized, and if they are get the current location. Make sure you call startLocationServices() first.
      
      - returns:
-     the current location as CLLocation if location services are authorized; otherwise returns CLLocation(latitude: 0, longitude: 0)
+     the current location as CLLocation if location services are authorized; else returns nil
      
      - parameters:
         - locationManager: CLLocationManager instance being used in your VC
      */
-    func getCurrentLocation(locationManager: CLLocationManager) -> CLLocation {
-        if( CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse ||
-            CLLocationManager.authorizationStatus() == CLAuthorizationStatus.Authorized){
-                
-                return locationManager.location!
-                
-        } else {
-            return CLLocation(latitude: 0, longitude: 0)
-        }
+    static func getCurrentLocation(locationManager: CLLocationManager) -> CLLocation? {
+      if (CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedWhenInUse
+        || CLLocationManager.authorizationStatus() == CLAuthorizationStatus.AuthorizedAlways) {
+        return locationManager.location!
+      }
+      return nil
     }
     
     /**
@@ -174,14 +158,15 @@ class MDBSwiftUtils {
         - content: message to display in alert
         - currVC: the ViewController in which this function is being called
      */
-    func showBasicAlert(title: String, content: String, currVC: UIViewController) {
+    static func showBasicAlert(title: String, content: String, currVC: UIViewController) {
         let alert = UIAlertController(title: title, message: content, preferredStyle: UIAlertControllerStyle.Alert)
         
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { action in
+        alert.addAction(UIAlertAction(title: "OK", style: .Default) {
+          action in
             
-            alert.dismissViewControllerAnimated(true, completion: nil)
+          alert.dismissViewControllerAnimated(true, completion: nil)
             
-        }))
+        })
         
         currVC.presentViewController(alert, animated: true, completion: nil)
     }
@@ -197,7 +182,7 @@ class MDBSwiftUtils {
         - image: the image you are applying the alpha to
      
      */
-    func imageWithAlpha(alpha: CGFloat, image: UIImage) -> UIImage {
+    static func imageWithAlpha(alpha: CGFloat, image: UIImage) -> UIImage {
         UIGraphicsBeginImageContextWithOptions(image.size, false, 0.0)
         let context = UIGraphicsGetCurrentContext()!
         let area: CGRect = CGRectMake(0, 0, image.size.width, image.size.height)
@@ -219,7 +204,7 @@ class MDBSwiftUtils {
         - labelText: the text that the label should have
         - image: the image that we want to add to the label
      */
-    func addImageToLabel(label: UILabel, labelText: String, image: UIImage) {
+    static func addImageToLabel(label: UILabel, labelText: String, image: UIImage) {
         let attachment = NSTextAttachment()
         attachment.image = image
         let attachmentString = NSAttributedString(attachment: attachment)
@@ -227,7 +212,22 @@ class MDBSwiftUtils {
         textString.appendAttributedString(attachmentString)
         label.attributedText = textString
     }
-    
+  
+    /**
+      centers a subview within a superview's bounds.
+ 
+      - parameters:
+          - subview: view to center.
+          - view: view to center in.
+    */
+    static func centerSubviewInView(subview: UIView, view: UIView) {
+      let bounds = view.bounds
+      
+      subview.bounds = CGRect(x: bounds.width / 2 - subview.bounds.width / 2,
+                              y: bounds.height / 2 - subview.bounds.height / 2,
+                              width: subview.bounds.width, height: subview.bounds.height)
+    }
+  
     /**
      Set the image of a UIImageView from a url.
      
@@ -235,7 +235,7 @@ class MDBSwiftUtils {
         - urlString: url of the image as a String
         - imageView: imageView that we want to set the image of
      */
-    func setImageViewImageFromUrl(urlString: String, imageView: UIImageView) {
+    static func setImageViewImageFromUrl(urlString: String, imageView: UIImageView) {
         let url = NSURL(string: urlString)!
         let data = NSData(contentsOfURL: url)
         let image = UIImage(data: data!)!
@@ -249,22 +249,25 @@ class MDBSwiftUtils {
         - urlString: url for the request as a String
         - completion: block to be called once JSON object is retrieved
     */
-    func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
-        let url: NSURL = NSURL(string: urlString)!
-        let request = NSURLRequest(URL: url)
-        let opQueue = NSOperationQueue()
+    static func httpJSONGETRequest(urlString: String, completion: (NSDictionary) -> Void) {
+      guard let url = NSURL(string: urlString) else {
+        NSLog("Invalid URI Scheme")
+        return
+      }
+      let request = NSURLRequest(URL: url)
+      let opQueue = NSOperationQueue()
         
-        NSURLConnection.sendAsynchronousRequest(request, queue: opQueue, completionHandler:{ (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
-            do {
-                
-                if let result = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
-                    completion(result)
-                }
-                
-            } catch let error as NSError {
-                print(error.localizedDescription)
-            }
-        })
+      NSURLConnection.sendAsynchronousRequest(request, queue: opQueue) {
+        (response: NSURLResponse?, data: NSData?, error: NSError?) -> Void in
+          
+        do {
+          if let result = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
+            completion(result)
+          }
+        } catch let error as NSError {
+          NSLog(error.localizedDescription)
+        }
+      }
     }
     
     
